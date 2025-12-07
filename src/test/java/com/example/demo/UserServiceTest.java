@@ -9,11 +9,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
+import static org.mockito.Mockito.lenient;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -22,15 +24,19 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UserService userService;
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
     private User testUser;
+    private BCryptPasswordEncoder realEncoder;
 
     @BeforeEach
     void setUp() {
+        realEncoder = new BCryptPasswordEncoder();
+
         testUser = new User();
         testUser.setId(1L);
         testUser.setUsername("testuser");
@@ -38,8 +44,16 @@ class UserServiceTest {
         testUser.setPassword("plainPassword123");
     }
 
+    private void setupPasswordEncoder() {
+        lenient().when(passwordEncoder.encode(anyString())).thenAnswer(invocation ->
+                realEncoder.encode(invocation.getArgument(0)));
+        lenient().when(passwordEncoder.matches(anyString(), anyString())).thenAnswer(invocation ->
+                realEncoder.matches(invocation.getArgument(0), invocation.getArgument(1)));
+    }
+
     @Test
     void createUser_ShouldHashPassword() {
+        setupPasswordEncoder();
         when(userRepository.existsByEmail(testUser.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -61,7 +75,8 @@ class UserServiceTest {
 
     @Test
     void loginUser_ShouldSucceed_WithCorrectPassword() {
-        String hashedPassword = passwordEncoder.encode("plainPassword123");
+        setupPasswordEncoder();
+        String hashedPassword = realEncoder.encode("plainPassword123");
         testUser.setPassword(hashedPassword);
         when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
 
@@ -73,7 +88,8 @@ class UserServiceTest {
 
     @Test
     void loginUser_ShouldFail_WithWrongPassword() {
-        String hashedPassword = passwordEncoder.encode("plainPassword123");
+        setupPasswordEncoder();
+        String hashedPassword = realEncoder.encode("plainPassword123");
         testUser.setPassword(hashedPassword);
         when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.of(testUser));
 
@@ -91,7 +107,8 @@ class UserServiceTest {
 
     @Test
     void changePassword_ShouldSucceed_WithCorrectOldPassword() {
-        String hashedOldPassword = passwordEncoder.encode("oldPassword123");
+        setupPasswordEncoder();
+        String hashedOldPassword = realEncoder.encode("oldPassword123");
         testUser.setPassword(hashedOldPassword);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -100,13 +117,14 @@ class UserServiceTest {
 
         verify(userRepository, times(1)).save(any(User.class));
         assertNotEquals(hashedOldPassword, testUser.getPassword(), "Password should be changed");
-        assertTrue(passwordEncoder.matches("newPassword456", testUser.getPassword()),
+        assertTrue(realEncoder.matches("newPassword456", testUser.getPassword()),
                    "New password should match");
     }
 
     @Test
     void changePassword_ShouldFail_WithWrongOldPassword() {
-        String hashedPassword = passwordEncoder.encode("oldPassword123");
+        setupPasswordEncoder();
+        String hashedPassword = realEncoder.encode("oldPassword123");
         testUser.setPassword(hashedPassword);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
