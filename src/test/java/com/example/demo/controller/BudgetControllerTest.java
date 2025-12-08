@@ -112,7 +112,7 @@ class BudgetControllerTest {
 
         List<Budget> budgets = Arrays.asList(budget1, budget2);
 
-        when(budgetService.getAllBudgetsByUserId(1L)).thenReturn(budgets);
+        when(budgetService.getBudgetsByUserId(1L)).thenReturn(budgets);
 
         mockMvc.perform(get("/api/budgets/user/1"))
                 .andDo(print())

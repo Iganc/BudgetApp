@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.validation.BudgetValidator;
 import com.example.demo.model.Budget;
 import com.example.demo.repository.BudgetRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,17 +15,22 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import com.example.demo.model.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
 
 @ExtendWith(MockitoExtension.class)
 class BudgetServiceTest {
 
     @Mock
     private BudgetRepository budgetRepository;
+
+    @Mock
+    private BudgetValidator budgetValidator;
 
     @InjectMocks
     private BudgetService budgetService;
@@ -33,8 +39,14 @@ class BudgetServiceTest {
 
     @BeforeEach
     void setUp() {
+        User testUser = new User();
+        testUser.setId(1L);
+        testUser.setUsername("testuser");
+        testUser.setEmail("test@example.com");
+
         testBudget = new Budget();
         testBudget.setId(1L);
+        testBudget.setUser(testUser);
         testBudget.setName("Monthly Budget");
         testBudget.setLimit(new BigDecimal("1000.00"));
         testBudget.setCategory("Food");
@@ -44,6 +56,7 @@ class BudgetServiceTest {
 
     @Test
     void createBudget_ShouldSaveBudget() {
+        doNothing().when(budgetValidator).validateBudget(any(Budget.class)); // ✅ Dodaj to
         when(budgetRepository.save(any(Budget.class))).thenReturn(testBudget);
 
         Budget result = budgetService.createBudget(testBudget);
@@ -51,7 +64,37 @@ class BudgetServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getName()).isEqualTo("Monthly Budget");
+        verify(budgetValidator, times(1)).validateBudget(testBudget); // ✅ Dodaj to
         verify(budgetRepository, times(1)).save(testBudget);
+    }
+
+    @Test
+    void updateBudget_ShouldUpdateExistingBudget() {
+        User testUser = new User();
+        testUser.setId(1L);
+        testUser.setUsername("testuser");
+        testUser.setEmail("test@example.com");
+
+        Budget updatedBudget = new Budget();
+        updatedBudget.setUser(testUser);
+        updatedBudget.setName("Updated Budget");
+        updatedBudget.setLimit(new BigDecimal("2000.00"));
+        updatedBudget.setCategory("Entertainment");
+        updatedBudget.setStartDate(LocalDate.of(2025, 2, 1));
+        updatedBudget.setEndDate(LocalDate.of(2025, 2, 28));
+
+        doNothing().when(budgetValidator).validateBudget(any(Budget.class)); // ✅ Dodaj to
+        when(budgetRepository.findById(1L)).thenReturn(Optional.of(testBudget));
+        when(budgetRepository.save(any(Budget.class))).thenReturn(testBudget);
+
+        Budget result = budgetService.updateBudget(1L, updatedBudget);
+
+        assertThat(result.getName()).isEqualTo("Updated Budget");
+        assertThat(result.getLimit()).isEqualTo(new BigDecimal("2000.00"));
+        assertThat(result.getCategory()).isEqualTo("Entertainment");
+        verify(budgetValidator, times(1)).validateBudget(any(Budget.class)); // ✅ Dodaj to
+        verify(budgetRepository, times(1)).findById(1L);
+        verify(budgetRepository, times(1)).save(any(Budget.class));
     }
 
     @Test
@@ -84,7 +127,7 @@ class BudgetServiceTest {
         List<Budget> budgets = Arrays.asList(testBudget, budget2);
         when(budgetRepository.findByUserId(1L)).thenReturn(budgets);
 
-        List<Budget> result = budgetService.getAllBudgetsByUserId(1L);
+        List<Budget> result = budgetService.getBudgetsByUserId(1L);
 
         assertThat(result).hasSize(2);
         assertThat(result).contains(testBudget, budget2);
@@ -101,27 +144,6 @@ class BudgetServiceTest {
         assertThat(result).hasSize(1);
         assertThat(result).contains(testBudget);
         verify(budgetRepository, times(1)).findAll();
-    }
-
-    @Test
-    void updateBudget_ShouldUpdateExistingBudget() {
-        Budget updatedBudget = new Budget();
-        updatedBudget.setName("Updated Budget");
-        updatedBudget.setLimit(new BigDecimal("2000.00"));
-        updatedBudget.setCategory("Entertainment");
-        updatedBudget.setStartDate(LocalDate.of(2025, 2, 1));
-        updatedBudget.setEndDate(LocalDate.of(2025, 2, 28));
-
-        when(budgetRepository.findById(1L)).thenReturn(Optional.of(testBudget));
-        when(budgetRepository.save(any(Budget.class))).thenReturn(testBudget);
-
-        Budget result = budgetService.updateBudget(1L, updatedBudget);
-
-        assertThat(result.getName()).isEqualTo("Updated Budget");
-        assertThat(result.getLimit()).isEqualTo(new BigDecimal("2000.00"));
-        assertThat(result.getCategory()).isEqualTo("Entertainment");
-        verify(budgetRepository, times(1)).findById(1L);
-        verify(budgetRepository, times(1)).save(any(Budget.class));
     }
 
     @Test
