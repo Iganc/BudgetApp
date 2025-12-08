@@ -92,7 +92,7 @@ class ReportServiceTest {
                 .hasMessageContaining("Budget not found");
 
         verify(budgetRepository, times(1)).findById(999L);
-        verify(transactionRepository, never()).findByBudgetId(anyLong());
+        verify(budgetAnalyticsService, never()).calculateTotalSpent(anyLong());
     }
 
     @Test
