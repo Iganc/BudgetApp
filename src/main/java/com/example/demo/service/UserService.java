@@ -30,6 +30,10 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    public Optional<User> getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
     public User createUser(User user) {
         if (existsByEmail(user.getEmail())) {
             throw new IllegalArgumentException("Email already in use");
