@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "budget")
 public class Budget {
 
     @Id
@@ -17,10 +18,19 @@ public class Budget {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(nullable = false)
     private String name;
+
+    @Column(name = "budget_limit", nullable = false)
     private BigDecimal limit;
+
+    @Column(nullable = false, length = 100)
     private String category;
+
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
+
+    @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
     @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)

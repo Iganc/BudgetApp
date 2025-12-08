@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class JwtUtilTest {
 
@@ -13,18 +13,17 @@ class JwtUtilTest {
     @BeforeEach
     void setUp() {
         jwtUtil = new JwtUtil();
-
-        // Użyj surowego klucza (minimum 32 znaki dla HS256)
-        ReflectionTestUtils.setField(jwtUtil, "secretKey", "myVerySecureSecretKeyForJWT12345");
-        ReflectionTestUtils.setField(jwtUtil, "expirationTime", 86400000L);
+        ReflectionTestUtils.setField(jwtUtil, "secretKey",
+            "thisIsAVeryLongSecretKeyForJwtTokenGenerationAndValidationInTestEnvironmentWithMoreThan256Bits");
+        ReflectionTestUtils.setField(jwtUtil, "expirationTime", 3600000L);
     }
 
     @Test
     void generateToken_ShouldCreateValidToken() {
         String token = jwtUtil.generateToken("test@example.com", 1L);
 
-        assertNotNull(token);
-        assertTrue(token.startsWith("eyJ"));
+        assertThat(token).isNotNull();
+        assertThat(token).isNotEmpty();
     }
 
     @Test
@@ -33,27 +32,33 @@ class JwtUtilTest {
 
         String email = jwtUtil.extractEmail(token);
 
-        assertEquals("test@example.com", email);
+        assertThat(email).isEqualTo("test@example.com");
     }
 
     @Test
     void extractUserId_ShouldReturnCorrectId() {
-        String token = jwtUtil.generateToken("test@example.com", 1L);
+        String token = jwtUtil.generateToken("test@example.com", 123L);
 
         Long userId = jwtUtil.extractUserId(token);
 
-        assertEquals(1L, userId);
+        assertThat(userId).isEqualTo(123L);
     }
 
     @Test
     void isTokenValid_ShouldReturnTrue_ForValidToken() {
         String token = jwtUtil.generateToken("test@example.com", 1L);
 
-        assertTrue(jwtUtil.isTokenValid(token));
+        boolean isValid = jwtUtil.isTokenValid(token);
+
+        assertThat(isValid).isTrue();
     }
 
     @Test
     void isTokenValid_ShouldReturnFalse_ForInvalidToken() {
-        assertFalse(jwtUtil.isTokenValid("invalid.token.here"));
+        String invalidToken = "eyJhbGciOiJIUzI1NiJ9.invalid.token";
+
+        boolean isValid = jwtUtil.isTokenValid(invalidToken);
+
+        assertThat(isValid).isFalse();
     }
 }

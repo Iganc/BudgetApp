@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "transaction")
 public class Transaction {
 
     @Id
@@ -19,12 +20,17 @@ public class Transaction {
     @JoinColumn(name = "budget_id")
     private Budget budget;
 
+    @Column(nullable = false)
     private BigDecimal amount;
+
+    @Column(length = 500)
     private String description;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private TransactionType type;
 
+    @Column(nullable = false)
     private LocalDateTime date;
 
     // Getters and Setters
