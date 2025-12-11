@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.SpendingByCategoryDTO;
 import com.example.demo.model.Budget;
 import com.example.demo.model.Transaction;
 import com.example.demo.repository.TransactionRepository;
@@ -84,5 +85,17 @@ public class TransactionService {
         }
 
         transactionRepository.deleteById(id);
+    }
+
+    public List<SpendingByCategoryDTO> getSpendingByCategory(Long budgetId, Long userId) {
+
+        // Zabezpieczenie: Sprawdzamy, czy budżet istnieje i należy do użytkownika
+        Optional<Budget> budget = budgetService.getBudgetById(budgetId);
+        if (budget.isEmpty() || !budget.get().getUser().getId().equals(userId)) {
+            throw new RuntimeException("Budget not found or access denied.");
+        }
+
+        // Wywołujemy funkcję repozytorium
+        return transactionRepository.findSpendingByCategoryForChart(budgetId);
     }
 }

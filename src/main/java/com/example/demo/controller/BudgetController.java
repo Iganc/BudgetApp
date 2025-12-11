@@ -1,9 +1,11 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.SpendingByCategoryDTO;
 import com.example.demo.model.Budget;
 import com.example.demo.model.User;
 import com.example.demo.service.BudgetAnalyticsService;
 import com.example.demo.service.BudgetService;
+import com.example.demo.service.TransactionService;
 import com.example.demo.service.UserService;
 import com.example.demo.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/budgets")
@@ -31,6 +34,9 @@ public class BudgetController {
 
     @Autowired
     private BudgetAnalyticsService budgetAnalyticsService;
+
+    @Autowired
+    private TransactionService transactionService;
 
     @PostMapping
     public ResponseEntity<Budget> createBudget(@RequestBody Budget budget, @RequestHeader("Authorization") String authHeader) {
@@ -135,6 +141,17 @@ public class BudgetController {
         BigDecimal balance = budgetAnalyticsService.calculateBalance(budgetId);
 
         return new ResponseEntity<>(balance, HttpStatus.OK);
+    }
+
+    @GetMapping("/{budgetId}/spending-by-category")
+    public ResponseEntity<List<SpendingByCategoryDTO>> getSpendingByCategory(@PathVariable Long budgetId, @RequestHeader("Authorization") String authHeader) {
+        Long userId = getUserIdFromToken(authHeader);
+
+        // ZMIANA: Usuwamy ręczną walidację i polegamy na nowej walidacji w serwisie transakcji.
+        // transactionService i tak sprawdzi, czy budżet należy do użytkownika.
+        List<SpendingByCategoryDTO> spendingData = transactionService.getSpendingByCategory(budgetId, userId);
+
+        return new ResponseEntity<>(spendingData, HttpStatus.OK);
     }
 
     private Long getUserIdFromToken(String authHeader) {

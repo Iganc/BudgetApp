@@ -26,6 +26,10 @@ public class BudgetService {
         return budgetRepository.findById(id);
     }
 
+    public boolean existsByIdAndUserId(Long budgetId, Long userId) {
+        return budgetRepository.existsByIdAndUserId(budgetId, userId);
+    }
+
     public List<Budget> getBudgetsByUserId(Long userId) {
         return budgetRepository.findByUserId(userId);
     }

@@ -33,4 +33,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
         @Param("startDate") LocalDate startDate,
         @Param("endDate") LocalDate endDate
     );
+
+    @Query("SELECT new com.example.demo.dto.SpendingByCategoryDTO(t.category, SUM(t.amount)) " +
+            "FROM Transaction t WHERE t.budget.id = :budgetId AND t.type = 'EXPENSE' " +
+            "GROUP BY t.category")
+    List<SpendingByCategoryDTO> findSpendingByCategoryForChart(
+            @Param("budgetId") Long budgetId
+    );
 }
