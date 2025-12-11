@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,6 +10,13 @@ import java.util.List;
 @Entity
 @Table(name = "budget")
 public class Budget {
+
+    public Budget() {
+    }
+
+    public Budget(Long id) {
+        this.id = id;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,19 +29,14 @@ public class Budget {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "budget_limit", nullable = false)
-    private BigDecimal limit;
-
-    @Column(nullable = false, length = 100)
-    private String category;
-
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "end_date", nullable = true)
     private LocalDate endDate;
 
     @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Transaction> transactions = new ArrayList<>();
 
     public Long getId() { return id; }
@@ -44,12 +47,6 @@ public class Budget {
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
-    public BigDecimal getLimit() { return limit; }
-    public void setLimit(BigDecimal limit) { this.limit = limit; }
-
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
 
     public LocalDate getStartDate() { return startDate; }
     public void setStartDate(LocalDate startDate) { this.startDate = startDate; }

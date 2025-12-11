@@ -63,22 +63,6 @@ class BudgetRepositoryTest {
                 .containsExactlyInAnyOrder("Groceries", "Entertainment");
     }
 
-    @Test
-    void shouldFindBudgetsByUserIdAndCategory() {
-        Budget budget1 = createBudget("Groceries", "Food", new BigDecimal("1500.00"));
-        Budget budget2 = createBudget("Restaurant", "Food", new BigDecimal("500.00"));
-        Budget budget3 = createBudget("Cinema", "Entertainment", new BigDecimal("300.00"));
-        entityManager.persist(budget1);
-        entityManager.persist(budget2);
-        entityManager.persist(budget3);
-        entityManager.flush();
-
-        List<Budget> foodBudgets = budgetRepository.findByUserIdAndCategory(testUser.getId(), "Food");
-
-        assertThat(foodBudgets).hasSize(2);
-        assertThat(foodBudgets).extracting(Budget::getName)
-                .containsExactlyInAnyOrder("Groceries", "Restaurant");
-    }
 
     @Test
     void shouldReturnEmptyListWhenNoBudgetsFound() {
@@ -91,7 +75,6 @@ class BudgetRepositoryTest {
         Budget budget = new Budget();
         budget.setUser(testUser);
         budget.setName(name);
-        budget.setCategory(category);
         budget.setLimit(limit);
         budget.setStartDate(LocalDate.of(2025, 1, 1));
         budget.setEndDate(LocalDate.of(2025, 1, 31));

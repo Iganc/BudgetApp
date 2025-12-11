@@ -38,7 +38,6 @@ class BudgetValidatorTest {
         testBudget.setUser(testUser);
         testBudget.setName("Test Budget");
         testBudget.setLimit(new BigDecimal("1000.00"));
-        testBudget.setCategory("Food");
         testBudget.setStartDate(LocalDate.of(2025, 1, 1));
         testBudget.setEndDate(LocalDate.of(2025, 1, 31));
     }
@@ -106,23 +105,5 @@ class BudgetValidatorTest {
         assertThatThrownBy(() -> budgetValidator.validateBudget(testBudget))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Budget limit must be greater than zero");
-    }
-
-    @Test
-    void validateBudget_ShouldThrowException_WhenCategoryIsNull() {
-        testBudget.setCategory(null);
-
-        assertThatThrownBy(() -> budgetValidator.validateBudget(testBudget))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Category cannot be empty");
-    }
-
-    @Test
-    void validateBudget_ShouldThrowException_WhenCategoryIsBlank() {
-        testBudget.setCategory("   ");
-
-        assertThatThrownBy(() -> budgetValidator.validateBudget(testBudget))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Category cannot be empty");
     }
 }

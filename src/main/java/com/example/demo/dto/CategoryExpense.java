@@ -6,7 +6,6 @@ public class CategoryExpense {
     private String category;
     private BigDecimal totalAmount;
     private Long transactionCount;
-    private BigDecimal budgetLimit;
     private BigDecimal remaining;
     private Double percentageUsed;
 
@@ -26,9 +25,6 @@ public class CategoryExpense {
 
     public Long getTransactionCount() { return transactionCount; }
     public void setTransactionCount(Long transactionCount) { this.transactionCount = transactionCount; }
-
-    public BigDecimal getBudgetLimit() { return budgetLimit; }
-    public void setBudgetLimit(BigDecimal budgetLimit) { this.budgetLimit = budgetLimit; }
 
     public BigDecimal getRemaining() { return remaining; }
     public void setRemaining(BigDecimal remaining) { this.remaining = remaining; }

@@ -49,7 +49,6 @@ class BudgetControllerTest {
         budget.setUser(user);
         budget.setName("Monthly Budget");
         budget.setLimit(BigDecimal.valueOf(5000.0));
-        budget.setCategory("Food");
         budget.setStartDate(LocalDate.of(2024, 1, 1));
         budget.setEndDate(LocalDate.of(2024, 1, 31));
 
@@ -75,7 +74,6 @@ class BudgetControllerTest {
         budget.setUser(user);
         budget.setName("Monthly Budget");
         budget.setLimit(BigDecimal.valueOf(5000.0));
-        budget.setCategory("Food");
 
         when(budgetService.getBudgetById(1L)).thenReturn(Optional.of(budget));
 

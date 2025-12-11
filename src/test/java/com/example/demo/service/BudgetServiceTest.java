@@ -49,7 +49,6 @@ class BudgetServiceTest {
         testBudget.setUser(testUser);
         testBudget.setName("Monthly Budget");
         testBudget.setLimit(new BigDecimal("1000.00"));
-        testBudget.setCategory("Food");
         testBudget.setStartDate(LocalDate.of(2025, 1, 1));
         testBudget.setEndDate(LocalDate.of(2025, 1, 31));
     }
@@ -79,7 +78,6 @@ class BudgetServiceTest {
         updatedBudget.setUser(testUser);
         updatedBudget.setName("Updated Budget");
         updatedBudget.setLimit(new BigDecimal("2000.00"));
-        updatedBudget.setCategory("Entertainment");
         updatedBudget.setStartDate(LocalDate.of(2025, 2, 1));
         updatedBudget.setEndDate(LocalDate.of(2025, 2, 28));
 

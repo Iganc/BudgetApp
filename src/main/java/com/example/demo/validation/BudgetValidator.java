@@ -18,8 +18,6 @@ public class BudgetValidator {
     public void validateBudget(Budget budget) {
         validateBasicFields(budget);
         validateDateRange(budget);
-        validateLimit(budget);
-        validateCategory(budget);
         validateNoOverlap(budget);
     }
 
@@ -34,23 +32,6 @@ public class BudgetValidator {
 
     private void validateDateRange(Budget budget) {
         dateRangeValidator.validateDateRange(budget.getStartDate(), budget.getEndDate());
-    }
-
-    private void validateLimit(Budget budget) {
-        if (budget.getLimit() == null) {
-            throw new IllegalArgumentException("Budget limit cannot be null");
-        }
-        if (budget.getLimit().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(
-                String.format("Budget limit must be greater than zero, got: %s", budget.getLimit())
-            );
-        }
-    }
-
-    private void validateCategory(Budget budget) {
-        if (budget.getCategory() == null || budget.getCategory().isBlank()) {
-            throw new IllegalArgumentException("Category cannot be empty");
-        }
     }
 
     private void validateNoOverlap(Budget budget) {

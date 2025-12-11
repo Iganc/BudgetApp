@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.model.Budget;
 import com.example.demo.model.Transaction;
 import com.example.demo.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +13,30 @@ import java.util.Optional;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final BudgetService budgetService;
 
     @Autowired
-    public TransactionService(TransactionRepository transactionRepository) {
+    public TransactionService(TransactionRepository transactionRepository, BudgetService budgetService) {
         this.transactionRepository = transactionRepository;
+        this.budgetService = budgetService;
     }
 
-    public Transaction createTransaction(Transaction transaction) {
+    public Transaction createTransaction(Transaction transaction, Long userId) {
+
+        if (transaction.getUser() == null || !transaction.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Transaction must be assigned to the logged-in user.");
+        }
+
+        if (transaction.getBudget() != null && transaction.getBudget().getId() != null) {
+            Long budgetId = transaction.getBudget().getId();
+
+            Optional<Budget> budget = budgetService.getBudgetById(budgetId);
+            if (budget.isEmpty() || !budget.get().getUser().getId().equals(userId)) {
+                throw new RuntimeException("Budget not found or access denied.");
+            }
+            transaction.setBudget(budget.get());
+        }
+
         return transactionRepository.save(transaction);
     }
 
@@ -26,34 +44,45 @@ public class TransactionService {
         return transactionRepository.findById(id);
     }
 
-    public List<Transaction> getAllTransactionsByUserId(Long userId) {
+    public List<Transaction> getTransactionsByUserId(Long userId) {
         return transactionRepository.findByUserId(userId);
     }
 
-    public List<Transaction> getAllTransactionsByBudgetId(Long budgetId) {
+    public List<Transaction> getTransactionsByBudgetId(Long budgetId, Long userId) {
+
+        Optional<Budget> budget = budgetService.getBudgetById(budgetId);
+        if (budget.isEmpty() || !budget.get().getUser().getId().equals(userId)) {
+            throw new RuntimeException("Budget not found or access denied.");
+        }
+
         return transactionRepository.findByBudgetId(budgetId);
     }
 
-    public List<Transaction> getAllTransactions() {
-        return transactionRepository.findAll();
-    }
-
-    public Transaction updateTransaction(Long id, Transaction updatedTransaction) {
+    public Transaction updateTransaction(Long id, Transaction updatedTransaction, Long userId) {
         return transactionRepository.findById(id)
                 .map(transaction -> {
+                    if (!transaction.getUser().getId().equals(userId)) {
+                        throw new RuntimeException("Access denied: Transaction does not belong to user.");
+                    }
+
                     transaction.setAmount(updatedTransaction.getAmount());
                     transaction.setDescription(updatedTransaction.getDescription());
                     transaction.setType(updatedTransaction.getType());
                     transaction.setDate(updatedTransaction.getDate());
+
                     return transactionRepository.save(transaction);
                 })
                 .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
     }
 
-    public void deleteTransaction(Long id) {
-        if (!transactionRepository.existsById(id)) {
-            throw new RuntimeException("Transaction not found with id: " + id);
+    public void deleteTransaction(Long id, Long userId) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
+
+        if (!transaction.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Access denied: Transaction does not belong to user.");
         }
+
         transactionRepository.deleteById(id);
     }
 }

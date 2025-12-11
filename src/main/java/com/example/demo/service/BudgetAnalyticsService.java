@@ -20,9 +20,4 @@ public class BudgetAnalyticsService {
                 .map(transaction -> transaction.getAmount())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-
-    public BigDecimal calculateRemainingAmount(Budget budget) {
-        BigDecimal totalSpent = calculateTotalSpent(budget.getId());
-        return budget.getLimit().subtract(totalSpent);
-    }
 }

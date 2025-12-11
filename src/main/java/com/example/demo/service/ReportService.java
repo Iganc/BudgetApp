@@ -29,14 +29,11 @@ public class ReportService {
                 .orElseThrow(() -> new RuntimeException("Budget not found with id: " + budgetId));
 
         BigDecimal totalSpent = budgetAnalyticsService.calculateTotalSpent(budgetId);
-        BigDecimal remainingAmount = budget.getLimit().subtract(totalSpent);
 
         BudgetSummaryDTO summary = new BudgetSummaryDTO();
         summary.setBudgetId(budget.getId());
         summary.setBudgetName(budget.getName());
-        summary.setTotalLimit(budget.getLimit());
         summary.setTotalSpent(totalSpent);
-        summary.setRemainingAmount(remainingAmount);
 
         return summary;
     }

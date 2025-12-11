@@ -42,7 +42,6 @@ class TransactionRepositoryTest {
         testBudget = new Budget();
         testBudget.setUser(testUser);
         testBudget.setName("Groceries");
-        testBudget.setCategory("Food");
         testBudget.setLimit(new BigDecimal("1500.00"));
         testBudget.setStartDate(LocalDate.of(2025, 1, 1));
         testBudget.setEndDate(LocalDate.of(2025, 1, 31));

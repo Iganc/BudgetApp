@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 public class BudgetSummaryDTO {
     private Long budgetId;
     private String budgetName;
-    private BigDecimal totalLimit;
     private BigDecimal totalSpent;
     private BigDecimal remainingAmount;
 
@@ -23,14 +22,6 @@ public class BudgetSummaryDTO {
 
     public void setBudgetName(String budgetName) {
         this.budgetName = budgetName;
-    }
-
-    public BigDecimal getTotalLimit() {
-        return totalLimit;
-    }
-
-    public void setTotalLimit(BigDecimal totalLimit) {
-        this.totalLimit = totalLimit;
     }
 
     public BigDecimal getTotalSpent() {

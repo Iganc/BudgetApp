@@ -6,7 +6,6 @@ import java.time.LocalDate;
 public class BudgetUsageReport {
     private Long budgetId;
     private String budgetName;
-    private BigDecimal limit;
     private BigDecimal spent;
     private BigDecimal remaining;
     private Double percentageUsed;
@@ -19,9 +18,6 @@ public class BudgetUsageReport {
 
     public String getBudgetName() { return budgetName; }
     public void setBudgetName(String budgetName) { this.budgetName = budgetName; }
-
-    public BigDecimal getLimit() { return limit; }
-    public void setLimit(BigDecimal limit) { this.limit = limit; }
 
     public BigDecimal getSpent() { return spent; }
     public void setSpent(BigDecimal spent) { this.spent = spent; }

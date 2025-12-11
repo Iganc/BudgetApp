@@ -38,8 +38,6 @@ public class BudgetService {
     public Budget updateBudget(Long id, Budget budgetDetails) {
         return budgetRepository.findById(id).map(budget -> {
             budget.setName(budgetDetails.getName());
-            budget.setCategory(budgetDetails.getCategory());
-            budget.setLimit(budgetDetails.getLimit());
             budget.setStartDate(budgetDetails.getStartDate());
             budget.setEndDate(budgetDetails.getEndDate());
 

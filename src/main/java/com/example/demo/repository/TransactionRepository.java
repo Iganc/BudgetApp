@@ -21,14 +21,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.budget.id = :budgetId AND t.type = :type")
     BigDecimal sumAmountByBudgetIdAndType(@Param("budgetId") Long budgetId, @Param("type") TransactionType type);
 
-    @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.budget.category = :category AND t.date BETWEEN :start AND :end")
-    List<Transaction> findByUserIdAndCategoryAndDateBetween(
-        @Param("userId") Long userId,
-        @Param("category") String category,
-        @Param("start") LocalDateTime start,
-        @Param("end") LocalDateTime end
-    );
-
     @Query("SELECT new com.example.demo.dto.SpendingByCategoryDTO(t.category, SUM(t.amount)) " +
            "FROM Transaction t WHERE t.budget.id = :budgetId " +
            "AND t.date BETWEEN :startDate AND :endDate " +
