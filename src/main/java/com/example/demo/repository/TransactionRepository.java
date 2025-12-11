@@ -18,8 +18,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findByBudgetId(Long budgetId);
     List<Transaction> findByUserIdAndDateBetween(Long userId, LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.budget.id = :budgetId AND t.type = :type")
-    BigDecimal sumAmountByBudgetIdAndType(@Param("budgetId") Long budgetId, @Param("type") TransactionType type);
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.budget.id = :budgetId AND t.type = 'EXPENSE'")
+    BigDecimal sumExpenseAmountByBudgetId(@Param("budgetId") Long budgetId);
+
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.budget.id = :budgetId AND t.type = 'INCOME'")
+    BigDecimal sumIncomeAmountByBudgetId(@Param("budgetId") Long budgetId);
 
     @Query("SELECT new com.example.demo.dto.SpendingByCategoryDTO(t.category, SUM(t.amount)) " +
            "FROM Transaction t WHERE t.budget.id = :budgetId " +

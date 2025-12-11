@@ -15,9 +15,18 @@ public class BudgetAnalyticsService {
     private TransactionRepository transactionRepository;
 
     public BigDecimal calculateTotalSpent(Long budgetId) {
-        return transactionRepository.findByBudgetId(budgetId)
-                .stream()
-                .map(transaction -> transaction.getAmount())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalSpent = transactionRepository.sumExpenseAmountByBudgetId(budgetId);
+
+        return totalSpent != null ? totalSpent : BigDecimal.ZERO;
+    }
+    public BigDecimal calculateTotalIncome(Long budgetId) {
+        BigDecimal totalIncome = transactionRepository.sumIncomeAmountByBudgetId(budgetId);
+        return totalIncome != null ? totalIncome : BigDecimal.ZERO;
+    }
+    public BigDecimal calculateBalance(Long budgetId) {
+        BigDecimal totalIncome = calculateTotalIncome(budgetId);
+        BigDecimal totalSpent = calculateTotalSpent(budgetId);
+
+        return totalIncome.subtract(totalSpent);
     }
 }

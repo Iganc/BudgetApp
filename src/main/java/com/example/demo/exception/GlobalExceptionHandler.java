@@ -17,11 +17,6 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(BudgetOverlapException.class)
-    public ResponseEntity<Map<String, Object>> handleBudgetOverlap(BudgetOverlapException ex) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
-    }
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);

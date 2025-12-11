@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Budget;
 import com.example.demo.model.User;
+import com.example.demo.service.BudgetAnalyticsService;
 import com.example.demo.service.BudgetService;
 import com.example.demo.service.UserService;
 import com.example.demo.security.JwtUtil;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -26,6 +28,9 @@ public class BudgetController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private BudgetAnalyticsService budgetAnalyticsService;
 
     @PostMapping
     public ResponseEntity<Budget> createBudget(@RequestBody Budget budget, @RequestHeader("Authorization") String authHeader) {
@@ -82,6 +87,54 @@ public class BudgetController {
         } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("/{budgetId}/spent")
+    public ResponseEntity<BigDecimal> getTotalSpentForBudget(
+            @PathVariable Long budgetId,
+            @RequestHeader("Authorization") String authHeader) {
+
+        Long userId = getUserIdFromToken(authHeader);
+
+        budgetService.getBudgetById(budgetId)
+                .filter(b -> b.getUser().getId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Budget not found or access denied"));
+
+        BigDecimal totalSpent = budgetAnalyticsService.calculateTotalSpent(budgetId);
+
+        return new ResponseEntity<>(totalSpent, HttpStatus.OK);
+    }
+
+    @GetMapping("/{budgetId}/earned")
+    public ResponseEntity<BigDecimal> getTotalIncomeForBudget(
+            @PathVariable Long budgetId,
+            @RequestHeader("Authorization") String authHeader) {
+
+        Long userId = getUserIdFromToken(authHeader);
+
+        budgetService.getBudgetById(budgetId)
+                .filter(b -> b.getUser().getId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Budget not found or access denied"));
+
+        BigDecimal totalIncome = budgetAnalyticsService.calculateTotalIncome(budgetId);
+
+        return new ResponseEntity<>(totalIncome, HttpStatus.OK);
+    }
+
+    @GetMapping("/{budgetId}/balance")
+    public ResponseEntity<BigDecimal> getBalanceForBudget(
+            @PathVariable Long budgetId,
+            @RequestHeader("Authorization") String authHeader) {
+
+        Long userId = getUserIdFromToken(authHeader);
+
+        budgetService.getBudgetById(budgetId)
+                .filter(b -> b.getUser().getId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Budget not found or access denied"));
+
+        BigDecimal balance = budgetAnalyticsService.calculateBalance(budgetId);
+
+        return new ResponseEntity<>(balance, HttpStatus.OK);
     }
 
     private Long getUserIdFromToken(String authHeader) {

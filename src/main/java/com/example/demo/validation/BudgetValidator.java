@@ -12,13 +12,9 @@ public class BudgetValidator {
     @Autowired
     private DateRangeValidator dateRangeValidator;
 
-    @Autowired
-    private BudgetOverlapValidator budgetOverlapValidator;
-
     public void validateBudget(Budget budget) {
         validateBasicFields(budget);
         validateDateRange(budget);
-        validateNoOverlap(budget);
     }
 
     private void validateBasicFields(Budget budget) {
@@ -32,9 +28,5 @@ public class BudgetValidator {
 
     private void validateDateRange(Budget budget) {
         dateRangeValidator.validateDateRange(budget.getStartDate(), budget.getEndDate());
-    }
-
-    private void validateNoOverlap(Budget budget) {
-        budgetOverlapValidator.validateNoOverlap(budget);
     }
 }
