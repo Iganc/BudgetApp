@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.SpendingByCategoryDTO;
 import com.example.demo.model.Budget;
+import com.example.demo.model.Category;
 import com.example.demo.model.Transaction;
 import com.example.demo.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +16,13 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final BudgetService budgetService;
+    private final CategoryService categoryService;
 
     @Autowired
-    public TransactionService(TransactionRepository transactionRepository, BudgetService budgetService) {
+    public TransactionService(TransactionRepository transactionRepository, BudgetService budgetService, CategoryService categoryService) {
         this.transactionRepository = transactionRepository;
         this.budgetService = budgetService;
+        this.categoryService = categoryService;
     }
 
     public Transaction createTransaction(Transaction transaction, Long userId) {
@@ -28,6 +31,7 @@ public class TransactionService {
             throw new RuntimeException("Transaction must be assigned to the logged-in user.");
         }
 
+        // 1. Walidacja i ustawienie Budżetu (istniejąca logika)
         if (transaction.getBudget() != null && transaction.getBudget().getId() != null) {
             Long budgetId = transaction.getBudget().getId();
 
@@ -37,6 +41,27 @@ public class TransactionService {
             }
             transaction.setBudget(budget.get());
         }
+
+        // 2. NOWA LOGIKA: Walidacja i ustawienie KATEGORII
+        if (transaction.getCategory() == null || transaction.getCategory().getId() == null) {
+            throw new RuntimeException("Category ID must be provided.");
+        }
+
+        Long categoryId = transaction.getCategory().getId();
+        Optional<Category> categoryOpt = categoryService.getCategoryById(categoryId);
+
+        if (categoryOpt.isEmpty()) {
+            throw new RuntimeException("Category not found.");
+        }
+
+        Category category = categoryOpt.get();
+
+        // Zabezpieczenie (opcjonalnie): Jeśli kategoria nie jest domyślna, musi należeć do użytkownika
+        if (category.getUser() != null && !category.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Access denied: Cannot use this custom category.");
+        }
+
+        transaction.setCategory(category); // Przypisanie pełnego obiektu Category
 
         return transactionRepository.save(transaction);
     }
@@ -66,6 +91,28 @@ public class TransactionService {
                         throw new RuntimeException("Access denied: Transaction does not belong to user.");
                     }
 
+                    // 1. NOWA LOGIKA: Walidacja i ustawienie KATEGORII
+                    if (updatedTransaction.getCategory() == null || updatedTransaction.getCategory().getId() == null) {
+                        throw new RuntimeException("Category ID must be provided.");
+                    }
+
+                    Long categoryId = updatedTransaction.getCategory().getId();
+                    Optional<Category> categoryOpt = categoryService.getCategoryById(categoryId);
+
+                    if (categoryOpt.isEmpty()) {
+                        throw new RuntimeException("Category not found.");
+                    }
+
+                    Category category = categoryOpt.get();
+
+                    // Zabezpieczenie (opcjonalnie): Jeśli kategoria nie jest domyślna, musi należeć do użytkownika
+                    if (category.getUser() != null && !category.getUser().getId().equals(userId)) {
+                        throw new RuntimeException("Access denied: Cannot use this custom category.");
+                    }
+
+                    transaction.setCategory(category); // Przypisanie pełnego obiektu Category
+
+                    // 2. Aktualizacja pozostałych pól
                     transaction.setAmount(updatedTransaction.getAmount());
                     transaction.setDescription(updatedTransaction.getDescription());
                     transaction.setType(updatedTransaction.getType());

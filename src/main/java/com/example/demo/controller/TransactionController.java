@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Budget;
+import com.example.demo.model.Category; // DODANO: Import Category
 import com.example.demo.model.Transaction;
 import com.example.demo.service.TransactionService;
+import com.example.demo.service.CategoryService; // DODANO: Import CategoryService
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,10 @@ public class TransactionController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    // DODANO: Wstrzyknięcie CategoryService
+    @Autowired
+    private CategoryService categoryService;
+
     private Long getUserIdFromToken(String authHeader) {
         String token = authHeader.substring(7);
         return jwtUtil.extractUserId(token);
@@ -42,14 +48,26 @@ public class TransactionController {
 
         transaction.setUser(user);
 
+        // 1. Ustawienie Budżetu (tworzymy obiekt z samym ID)
         if (transaction.getBudget() != null && transaction.getBudget().getId() != null) {
             transaction.setBudget(new Budget(transaction.getBudget().getId()));
         }
+
+        // 2. NOWA LOGIKA: Ustawienie Kategorii (tworzymy obiekt z samym ID)
+        if (transaction.getCategory() != null && transaction.getCategory().getId() != null) {
+            // Wymagane, ponieważ serwis oczekuje, że to pole ma ustawione ID do lookup
+            transaction.setCategory(new Category(transaction.getCategory().getId()));
+        } else {
+            // Wymagane, jeśli kategoria jest null lub nie ma ID
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
 
         try {
             Transaction created = transactionService.createTransaction(transaction, userId);
             return new ResponseEntity<>(created, HttpStatus.CREATED);
         } catch (RuntimeException e) {
+            // Zwracamy BAD_REQUEST dla błędów walidacji (np. kategoria nie należy do użytkownika)
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -74,9 +92,11 @@ public class TransactionController {
 
         Long userId = getUserIdFromToken(authHeader);
         try {
+            // Serwis teraz waliduje dostęp do budżetu
             List<Transaction> transactions = transactionService.getTransactionsByBudgetId(budgetId, userId);
             return new ResponseEntity<>(transactions, HttpStatus.OK);
         } catch (RuntimeException e) {
+            // Błąd dostępu do budżetu (np. nie istnieje lub nie należy do użytkownika)
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
@@ -98,10 +118,28 @@ public class TransactionController {
 
         Long userId = getUserIdFromToken(authHeader);
 
+        // NOWA LOGIKA: Walidacja Kategorii przed wysłaniem do serwisu
+        if (transaction.getCategory() == null || transaction.getCategory().getId() == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } else {
+            // Ustawienie Kategorii z samym ID
+            transaction.setCategory(new Category(transaction.getCategory().getId()));
+        }
+
+        // Walidacja Budżetu (jeśli jest aktualizowany)
+        if (transaction.getBudget() != null && transaction.getBudget().getId() != null) {
+            transaction.setBudget(new Budget(transaction.getBudget().getId()));
+        } else {
+            // Jeśli budżet jest null, musimy upewnić się, że model go obsłuży (lub unieważnić)
+            transaction.setBudget(null);
+        }
+
         try {
+            // Serwis zweryfikuje właściciela transakcji, budżetu i kategorii
             Transaction updated = transactionService.updateTransaction(id, transaction, userId);
             return new ResponseEntity<>(updated, HttpStatus.OK);
         } catch (RuntimeException e) {
+            // W przypadku błędów walidacji (np. Transaction not found)
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
@@ -117,6 +155,7 @@ public class TransactionController {
             transactionService.deleteTransaction(id, userId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (RuntimeException e) {
+            // W przypadku błędu dostępu lub braku transakcji
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }

@@ -24,19 +24,19 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.budget.id = :budgetId AND t.type = 'INCOME'")
     BigDecimal sumIncomeAmountByBudgetId(@Param("budgetId") Long budgetId);
 
-    @Query("SELECT new com.example.demo.dto.SpendingByCategoryDTO(t.category, SUM(t.amount)) " +
-           "FROM Transaction t WHERE t.budget.id = :budgetId " +
-           "AND t.date BETWEEN :startDate AND :endDate " +
-           "GROUP BY t.category")
+    // W TransactionRepository.java
+    @Query("SELECT new com.example.demo.dto.SpendingByCategoryDTO(t.category.name, SUM(t.amount)) " + // <-- Używamy t.category.name
+            "FROM Transaction t WHERE t.budget.id = :budgetId AND t.date BETWEEN :startDate AND :endDate GROUP BY t.category.name") // <-- Grupujemy po nazwie
     List<SpendingByCategoryDTO> findSpendingByCategory(
-        @Param("budgetId") Long budgetId,
-        @Param("startDate") LocalDate startDate,
-        @Param("endDate") LocalDate endDate
+            @Param("budgetId") Long budgetId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
     );
 
-    @Query("SELECT new com.example.demo.dto.SpendingByCategoryDTO(t.category, SUM(t.amount)) " +
+    // I dla wykresu:
+    @Query("SELECT new com.example.demo.dto.SpendingByCategoryDTO(t.category.name, SUM(t.amount)) " + // <-- Używamy t.category.name
             "FROM Transaction t WHERE t.budget.id = :budgetId AND t.type = 'EXPENSE' " +
-            "GROUP BY t.category")
+            "GROUP BY t.category.name") // <-- Grupujemy po nazwie
     List<SpendingByCategoryDTO> findSpendingByCategoryForChart(
             @Param("budgetId") Long budgetId
     );

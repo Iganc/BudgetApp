@@ -71,11 +71,10 @@ class BudgetRepositoryTest {
         assertThat(budgets).isEmpty();
     }
 
-    private Budget createBudget(String name, String category, BigDecimal limit) {
+    private Budget createBudget(String name) {
         Budget budget = new Budget();
         budget.setUser(testUser);
         budget.setName(name);
-        budget.setLimit(limit);
         budget.setStartDate(LocalDate.of(2025, 1, 1));
         budget.setEndDate(LocalDate.of(2025, 1, 31));
         return budget;

@@ -22,6 +22,11 @@ public class Transaction {
     @JoinColumn(name = "budget_id")
     private Budget budget;
 
+    // ZMIANA: Pole category jest teraz obiektem Category
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
     @Column(nullable = false)
     private BigDecimal amount;
 
@@ -35,14 +40,18 @@ public class Transaction {
     @Column(nullable = false)
     private LocalDateTime date;
 
-    @Column(name = "category")
-    private String category;
 
-    public String getCategory() {
+    // ZMIANA: Aktualizacja Gettera
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(String category) { this.category = category; }
+    // ZMIANA: Aktualizacja Settera
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    // --- Pozostałe Gettery i Settery ---
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

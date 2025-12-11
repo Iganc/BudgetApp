@@ -147,11 +147,12 @@ public class BudgetController {
     public ResponseEntity<List<SpendingByCategoryDTO>> getSpendingByCategory(@PathVariable Long budgetId, @RequestHeader("Authorization") String authHeader) {
         Long userId = getUserIdFromToken(authHeader);
 
-        // ZMIANA: Usuwamy ręczną walidację i polegamy na nowej walidacji w serwisie transakcji.
-        // transactionService i tak sprawdzi, czy budżet należy do użytkownika.
-        List<SpendingByCategoryDTO> spendingData = transactionService.getSpendingByCategory(budgetId, userId);
-
-        return new ResponseEntity<>(spendingData, HttpStatus.OK);
+        try {
+            List<SpendingByCategoryDTO> spendingData = transactionService.getSpendingByCategory(budgetId, userId); // <-- Przekazujemy userId
+            return new ResponseEntity<>(spendingData, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
     }
 
     private Long getUserIdFromToken(String authHeader) {
