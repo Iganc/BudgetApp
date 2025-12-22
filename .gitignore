@@ -41,3 +41,5 @@ Get
 Process
 Run
 Task
+
+/src/main/resources/application-prod.properties
