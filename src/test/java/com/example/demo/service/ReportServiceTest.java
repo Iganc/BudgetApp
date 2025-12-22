@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.BudgetSummaryDTO;
 import com.example.demo.dto.SpendingByCategoryDTO;
 import com.example.demo.model.Budget;
+import com.example.demo.model.Category;
 import com.example.demo.model.Transaction;
 import com.example.demo.model.User;
 import com.example.demo.repository.BudgetRepository;
@@ -51,36 +52,42 @@ class ReportServiceTest {
         testBudget = new Budget();
         testBudget.setId(1L);
         testBudget.setName("Monthly Budget");
-        testBudget.setLimit(new BigDecimal("1000.00"));
         testBudget.setUser(testUser);
+
+        Category foodCategory = new Category();
+        foodCategory.setId(1L);
+        foodCategory.setName("Food");
+
+        Category transportCategory = new Category();
+        transportCategory.setId(2L);
+        transportCategory.setName("Transport");
 
         testTransaction1 = new Transaction();
         testTransaction1.setId(1L);
         testTransaction1.setAmount(new BigDecimal("300.00"));
-        testTransaction1.setCategory("Food");
+        testTransaction1.setCategory(foodCategory);
         testTransaction1.setBudget(testBudget);
 
         testTransaction2 = new Transaction();
         testTransaction2.setId(2L);
         testTransaction2.setAmount(new BigDecimal("200.00"));
-        testTransaction2.setCategory("Transport");
+        testTransaction2.setCategory(transportCategory);
         testTransaction2.setBudget(testBudget);
     }
 
     @Test
     void getBudgetSummary_ShouldReturnSummary_WhenBudgetExists() {
         when(budgetRepository.findById(1L)).thenReturn(Optional.of(testBudget));
-        when(budgetAnalyticsService.calculateTotalSpent(1L)).thenReturn(new BigDecimal("500.00")); // Dodaj tę linię
+        when(budgetAnalyticsService.calculateTotalSpent(1L)).thenReturn(new BigDecimal("500.00"));
 
         BudgetSummaryDTO result = reportService.getBudgetSummary(1L);
 
         assertThat(result.getBudgetId()).isEqualTo(1L);
         assertThat(result.getBudgetName()).isEqualTo("Monthly Budget");
-        assertThat(result.getTotalLimit()).isEqualByComparingTo("1000.00");
         assertThat(result.getTotalSpent()).isEqualByComparingTo("500.00");
         assertThat(result.getRemainingAmount()).isEqualByComparingTo("500.00");
         verify(budgetRepository, times(1)).findById(1L);
-        verify(budgetAnalyticsService, times(1)).calculateTotalSpent(1L); // Dodaj weryfikację
+        verify(budgetAnalyticsService, times(1)).calculateTotalSpent(1L);
     }
 
     @Test

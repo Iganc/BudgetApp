@@ -9,7 +9,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -39,19 +38,18 @@ class BudgetRepositoryTest {
 
     @Test
     void shouldSaveBudget() {
-        Budget budget = createBudget("Groceries", "Food", new BigDecimal("1500.00"));
+        Budget budget = createBudget("Groceries");
 
         Budget saved = budgetRepository.save(budget);
 
         assertThat(saved.getId()).isNotNull();
         assertThat(saved.getName()).isEqualTo("Groceries");
-        assertThat(saved.getLimit()).isEqualByComparingTo(new BigDecimal("1500.00"));
     }
 
     @Test
     void shouldFindBudgetsByUserId() {
-        Budget budget1 = createBudget("Groceries", "Food", new BigDecimal("1500.00"));
-        Budget budget2 = createBudget("Entertainment", "Fun", new BigDecimal("500.00"));
+        Budget budget1 = createBudget("Groceries");
+        Budget budget2 = createBudget("Entertainment");
         entityManager.persist(budget1);
         entityManager.persist(budget2);
         entityManager.flush();

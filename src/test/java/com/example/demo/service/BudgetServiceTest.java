@@ -48,7 +48,6 @@ class BudgetServiceTest {
         testBudget.setId(1L);
         testBudget.setUser(testUser);
         testBudget.setName("Monthly Budget");
-        testBudget.setLimit(new BigDecimal("1000.00"));
         testBudget.setStartDate(LocalDate.of(2025, 1, 1));
         testBudget.setEndDate(LocalDate.of(2025, 1, 31));
     }
@@ -77,7 +76,6 @@ class BudgetServiceTest {
         Budget updatedBudget = new Budget();
         updatedBudget.setUser(testUser);
         updatedBudget.setName("Updated Budget");
-        updatedBudget.setLimit(new BigDecimal("2000.00"));
         updatedBudget.setStartDate(LocalDate.of(2025, 2, 1));
         updatedBudget.setEndDate(LocalDate.of(2025, 2, 28));
 
@@ -88,8 +86,6 @@ class BudgetServiceTest {
         Budget result = budgetService.updateBudget(1L, updatedBudget);
 
         assertThat(result.getName()).isEqualTo("Updated Budget");
-        assertThat(result.getLimit()).isEqualTo(new BigDecimal("2000.00"));
-        assertThat(result.getCategory()).isEqualTo("Entertainment");
         verify(budgetValidator, times(1)).validateBudget(any(Budget.class)); // ✅ Dodaj to
         verify(budgetRepository, times(1)).findById(1L);
         verify(budgetRepository, times(1)).save(any(Budget.class));

@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.config.TestSecurityConfig;
 import com.example.demo.model.Budget;
 import com.example.demo.model.Transaction;
 import com.example.demo.model.TransactionType;
@@ -9,8 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -25,9 +28,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.context.annotation.Import;
-import com.example.demo.config.TestSecurityConfig;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,7 +38,8 @@ class TransactionControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @SuppressWarnings("removal")
+    @MockBean
     private TransactionService transactionService;
 
     @Test
@@ -58,11 +59,12 @@ class TransactionControllerTest {
         transaction.setType(TransactionType.EXPENSE);
         transaction.setDate(LocalDateTime.now());
 
-        when(transactionService.createTransaction(any(Transaction.class))).thenReturn(transaction);
+        // Service signature: createTransaction(Transaction transaction, Long userId)
+        when(transactionService.createTransaction(any(Transaction.class), eq(1L))).thenReturn(transaction);
 
         mockMvc.perform(post("/api/transactions")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"amount\":100.0,\"description\":\"Grocery shopping\",\"type\":\"EXPENSE\"}"))
+                        .content("{\"amount\":100.0,\"description\":\"Grocery shopping\",\"type\":\"EXPENSE\",\"category\":{\"id\":1}}"))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
@@ -117,7 +119,8 @@ class TransactionControllerTest {
 
         List<Transaction> transactions = Arrays.asList(transaction1, transaction2);
 
-        when(transactionService.getAllTransactionsByUserId(1L)).thenReturn(transactions);
+        // Service signature: getTransactionsByUserId(Long userId)
+        when(transactionService.getTransactionsByUserId(eq(1L))).thenReturn(transactions);
 
         mockMvc.perform(get("/api/transactions/user/1"))
                 .andDo(print())
@@ -145,7 +148,8 @@ class TransactionControllerTest {
 
         List<Transaction> transactions = Arrays.asList(transaction1, transaction2);
 
-        when(transactionService.getAllTransactionsByBudgetId(1L)).thenReturn(transactions);
+        // Service signature: getTransactionsByBudgetId(Long budgetId, Long userId)
+        when(transactionService.getTransactionsByBudgetId(eq(1L), eq(1L))).thenReturn(transactions);
 
         mockMvc.perform(get("/api/transactions/budget/1"))
                 .andDo(print())
@@ -154,27 +158,6 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$[0].description").value("Budget Transaction 1"))
                 .andExpect(jsonPath("$[1].id").value(2))
                 .andExpect(jsonPath("$[1].description").value("Budget Transaction 2"));
-    }
-
-    @Test
-    void getAllTransactions_ShouldReturnListOfAllTransactions() throws Exception {
-        Transaction transaction1 = new Transaction();
-        transaction1.setId(1L);
-        transaction1.setDescription("Transaction 1");
-
-        Transaction transaction2 = new Transaction();
-        transaction2.setId(2L);
-        transaction2.setDescription("Transaction 2");
-
-        List<Transaction> transactions = Arrays.asList(transaction1, transaction2);
-
-        when(transactionService.getAllTransactions()).thenReturn(transactions);
-
-        mockMvc.perform(get("/api/transactions"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[1].id").value(2));
     }
 
     @Test
@@ -189,11 +172,12 @@ class TransactionControllerTest {
         updatedTransaction.setDescription("Updated description");
         updatedTransaction.setType(TransactionType.EXPENSE);
 
-        when(transactionService.updateTransaction(eq(1L), any(Transaction.class))).thenReturn(updatedTransaction);
+        // Service signature: updateTransaction(Long id, Transaction updatedTransaction, Long userId)
+        when(transactionService.updateTransaction(eq(1L), any(Transaction.class), eq(1L))).thenReturn(updatedTransaction);
 
         mockMvc.perform(put("/api/transactions/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"amount\":150.0,\"description\":\"Updated description\",\"type\":\"EXPENSE\"}"))
+                        .content("{\"amount\":150.0,\"description\":\"Updated description\",\"type\":\"EXPENSE\",\"category\":{\"id\":1}}"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.amount").value(150.0))
@@ -202,7 +186,8 @@ class TransactionControllerTest {
 
     @Test
     void updateTransaction_ShouldReturnNotFound_WhenTransactionDoesNotExist() throws Exception {
-        when(transactionService.updateTransaction(eq(999L), any(Transaction.class)))
+        // Service signature: updateTransaction(Long id, Transaction updatedTransaction, Long userId)
+        when(transactionService.updateTransaction(eq(999L), any(Transaction.class), eq(1L)))
                 .thenThrow(new RuntimeException("Transaction not found"));
 
         mockMvc.perform(put("/api/transactions/999")
@@ -214,7 +199,8 @@ class TransactionControllerTest {
 
     @Test
     void deleteTransaction_ShouldReturnNoContent_WhenTransactionExists() throws Exception {
-        doNothing().when(transactionService).deleteTransaction(1L);
+        // Service signature: deleteTransaction(Long id, Long userId)
+        doNothing().when(transactionService).deleteTransaction(1L, 1L);
 
         mockMvc.perform(delete("/api/transactions/1"))
                 .andDo(print())
@@ -223,7 +209,7 @@ class TransactionControllerTest {
 
     @Test
     void deleteTransaction_ShouldReturnNotFound_WhenTransactionDoesNotExist() throws Exception {
-        doThrow(new RuntimeException("Transaction not found")).when(transactionService).deleteTransaction(999L);
+        doThrow(new RuntimeException("Transaction not found")).when(transactionService).deleteTransaction(999L, 1L);
 
         mockMvc.perform(delete("/api/transactions/999"))
                 .andDo(print())

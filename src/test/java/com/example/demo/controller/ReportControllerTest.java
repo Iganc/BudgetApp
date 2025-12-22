@@ -37,7 +37,6 @@ class ReportControllerTest {
         testSummary = new BudgetSummaryDTO();
         testSummary.setBudgetId(1L);
         testSummary.setBudgetName("Monthly Budget");
-        testSummary.setTotalLimit(new BigDecimal("1000.00"));
         testSummary.setTotalSpent(new BigDecimal("500.00"));
         testSummary.setRemainingAmount(new BigDecimal("500.00"));
 

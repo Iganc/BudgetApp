@@ -21,9 +21,6 @@ class BudgetValidatorTest {
     @Mock
     private DateRangeValidator dateRangeValidator;
 
-    @Mock
-    private BudgetOverlapValidator budgetOverlapValidator;
-
     @InjectMocks
     private BudgetValidator budgetValidator;
 
@@ -37,7 +34,6 @@ class BudgetValidatorTest {
         testBudget = new Budget();
         testBudget.setUser(testUser);
         testBudget.setName("Test Budget");
-        testBudget.setLimit(new BigDecimal("1000.00"));
         testBudget.setStartDate(LocalDate.of(2025, 1, 1));
         testBudget.setEndDate(LocalDate.of(2025, 1, 31));
     }
@@ -45,12 +41,10 @@ class BudgetValidatorTest {
     @Test
     void validateBudget_ShouldPass_WhenAllFieldsValid() {
         doNothing().when(dateRangeValidator).validateDateRange(any(), any());
-        doNothing().when(budgetOverlapValidator).validateNoOverlap(any());
 
         budgetValidator.validateBudget(testBudget);
 
         verify(dateRangeValidator, times(1)).validateDateRange(testBudget.getStartDate(), testBudget.getEndDate());
-        verify(budgetOverlapValidator, times(1)).validateNoOverlap(testBudget);
     }
 
     @Test
@@ -78,32 +72,5 @@ class BudgetValidatorTest {
         assertThatThrownBy(() -> budgetValidator.validateBudget(testBudget))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("User cannot be null");
-    }
-
-    @Test
-    void validateBudget_ShouldThrowException_WhenLimitIsNull() {
-        testBudget.setLimit(null);
-
-        assertThatThrownBy(() -> budgetValidator.validateBudget(testBudget))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Budget limit cannot be null");
-    }
-
-    @Test
-    void validateBudget_ShouldThrowException_WhenLimitIsZero() {
-        testBudget.setLimit(BigDecimal.ZERO);
-
-        assertThatThrownBy(() -> budgetValidator.validateBudget(testBudget))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Budget limit must be greater than zero");
-    }
-
-    @Test
-    void validateBudget_ShouldThrowException_WhenLimitIsNegative() {
-        testBudget.setLimit(new BigDecimal("-100.00"));
-
-        assertThatThrownBy(() -> budgetValidator.validateBudget(testBudget))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Budget limit must be greater than zero");
     }
 }

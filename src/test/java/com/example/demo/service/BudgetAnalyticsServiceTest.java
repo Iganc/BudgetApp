@@ -38,7 +38,6 @@ class BudgetAnalyticsServiceTest {
 
         testBudget = new Budget();
         testBudget.setId(1L);
-        testBudget.setLimit(new BigDecimal("1000.00"));
         testBudget.setUser(testUser);
 
         testTransaction1 = new Transaction();
@@ -66,17 +65,6 @@ class BudgetAnalyticsServiceTest {
         BigDecimal result = budgetAnalyticsService.calculateTotalSpent(1L);
 
         assertThat(result).isEqualByComparingTo("0.00");
-        verify(transactionRepository, times(1)).findByBudgetId(1L);
-    }
-
-    @Test
-    void calculateRemainingAmount_ShouldReturnDifference() {
-        List<Transaction> transactions = Arrays.asList(testTransaction1, testTransaction2);
-        when(transactionRepository.findByBudgetId(1L)).thenReturn(transactions);
-
-        BigDecimal result = budgetAnalyticsService.calculateRemainingAmount(testBudget);
-
-        assertThat(result).isEqualByComparingTo("500.00");
         verify(transactionRepository, times(1)).findByBudgetId(1L);
     }
 }
